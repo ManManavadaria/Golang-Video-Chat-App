@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber"
@@ -17,18 +18,18 @@ func Room(c *fiber.Ctx) error {
 	uuid := c.Params("uuid")
 	if uuid == "" {
 		c.Status(404)
-		return nil
+		return errors.New("err")
 	}
+	return nil
 }
 
 func RoomWebsocket(c *websocket.Conn) {
 	uuid := c.Params("uuid")
-
 	if uuid == "" {
 		return
 	}
 }
 
-func CreateOrGetRoom(uuid string) (string, string, Room) {
+// func CreateOrGetRoom(uuid string) (string, string, Room) {
 
-}
+// }

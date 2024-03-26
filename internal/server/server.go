@@ -1,7 +1,10 @@
 package server
 
 import (
+	"Golang-Video-Chat-App/internal/handlers"
+	w "Golang-Video-Chat-App/pkg/webRTC"
 	"flag"
+	"net/http"
 	"os"
 	"time"
 
@@ -12,7 +15,7 @@ import (
 )
 
 var (
-	addr = flag.String("addr", os.Getenv("PORT"), "")
+	addr = flag.String("addr", ":"+os.Getenv("PORT"), "")
 	cert = flag.String("cert", "", "")
 	key  = flag.String("key", "", "")
 )
@@ -44,4 +47,21 @@ func Run() error {
 	app.Get("/stream/:suuid/chat/websocket", websocket.New(handlers.StreamChatWebsocket))
 	app.Get("/stream/:suuid/viewer/websocket", websocket.New(handlers.StreamViewerWebsocket))
 	app.Static("/", "./assets")
+
+	w.Rooms = make(map[string]*w.Room)
+	w.Streams = make(map[string]*w.Room)
+
+	if *cert != "" {
+		return http.ListenAndServeTLS(*addr, *cert, *key)
+	}
+	return app.Listen(*addr)
+
+	go dispatchKeyFrames()
+}
+func dispatchKeyFrames() {
+	for range time.NewTicker(time.Second * 3).C {
+		for _, room := range w.Rooms {
+			room.Peers.DispatchKeyFrames()
+		}
+	}
 }
